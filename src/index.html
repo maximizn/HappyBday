@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday Dona!</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: white;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      position: relative;
+    }
+
+    canvas {
+      background-color: transparent;
+      position: absolute;
+      z-index: 10;
+    }
+
+    h1 {
+      font-family: 'Comic Sans MS', cursive;
+      color: black;
+      text-align: center;
+      margin-top: 20px;
+      z-index: 20;
+    }
+
+    footer {
+      font-family: 'Arial', sans-serif;
+      color: gray;
+      font-size: 14px;
+      margin-bottom: 10px;
+      z-index: 20;
+    }
+
+    button {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: 'Arial', sans-serif;
+      z-index: 20;
+    }
+
+    #slideshow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 0;
+      transition: background-image 1s ease-in-out;
+      display: none;
+    }
+
+    #music-toggle {
+      position: fixed;
+      bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="slideshow"></div>
+<h1>🎉 Happy Birthday, Dona! 🎉</h1>
+<canvas id="canvas" width="400" height="400"></canvas>
+<audio id="bg-music" src="Kanye%20West%20-%20Bound%202%20(audio).mp3" preload="auto"></audio>
+<button id="music-toggle">Play</button>
+
+<footer>Made with ❤️</footer>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const music = document.getElementById("bg-music");
+  const musicToggle = document.getElementById("music-toggle");
+  const slideshow = document.getElementById("slideshow");
+
+  let t = 0;
+  let heartPath = [];
+  let isPlaying = false;
+  let animationFinished = false;
+  let slideshowInterval;
+
+  const backgrounds = [
+    'Dona1.jpeg', 'Dona2.jpeg', 'Dona3.jpeg', 'Dona4.jpeg',
+    'Dona5.jpeg', 'Dona6.jpeg', 'Dona7.jpeg', 'Dona8.jpeg',
+    'Dona9.jpeg', 'Dona10.jpeg', 'Dona11.jpeg', 'Dona12.jpeg',
+    'Dona13.jpeg', 'Dona14.jpeg', 'Dona15.jpeg', 'Dona16.jpeg',
+    'Dona17.jpeg', 'Dona18.jpeg', 'Dona19.jpeg', 'Dona20.jpeg',
+    'Dona21.jpeg', 'Dona22.jpeg', 'Dona23.jpeg', 'Dona24.jpeg',
+    'Dona25.jpeg', 'Dona26.jpeg', 'Dona27.jpeg', 'Dona28.jpeg',
+    'Dona29.jpeg', 'Dona30.jpg', 'Dona31.jpeg', 'Dona32.jpg',
+    'Dona33.jpeg', 'Dona34.jpg', 'Dona35.jpeg', 'Dona36.jpeg',
+    'Dona37.jpeg', 'Dona38.jpg', 'Dona39.jpg', 'Dona40.jpg',
+  ];
+
+  let currentBackgroundIndex = 0;
+
+  function changeBackground() {
+    slideshow.style.backgroundImage = `url(${backgrounds[currentBackgroundIndex]})`;
+    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgrounds.length;
+  }
+
+  function startSlideshow() {
+    slideshow.style.display = 'block';
+    changeBackground();
+    slideshowInterval = setInterval(changeBackground, 3000);
+  }
+
+  function stopSlideshow() {
+    clearInterval(slideshowInterval);
+    slideshow.style.display = 'none';
+  }
+
+  function heartFunc(t) {
+    const scale = 10;
+    const x = scale * 16 * Math.pow(Math.sin(t), 3);
+    const y = -scale * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+    return [x, y];
+  }
+
+  function animateHeart() {
+    if (t <= Math.PI * 2) {
+      const [x, y] = heartFunc(t);
+      heartPath.push({ x: canvas.width / 2 + x, y: canvas.height / 2 + y });
+      draw();
+      t += 0.02;
+      requestAnimationFrame(animateHeart);
+    } else {
+      animationFinished = true;
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "pink";
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < heartPath.length; i++) {
+      const point = heartPath[i];
+      if (i === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  musicToggle.addEventListener("click", () => {
+    if (!animationFinished) {
+      alert("Please wait for the heart animation to finish.");
+      return;
+    }
+
+    if (isPlaying) {
+      music.pause();
+      musicToggle.textContent = "Play";
+      stopSlideshow();
+      canvas.style.display = "block";
+      resetHeartAnimation();
+    } else {
+      music.play().catch((e) => {
+        console.log("User interaction required to play music.");
+      });
+      musicToggle.textContent = "Pause ";
+      canvas.style.display = "none";
+      startSlideshow();
+    }
+
+    isPlaying = !isPlaying;
+  });
+
+  function resetHeartAnimation() {
+    heartPath = [];
+    t = 0;
+    animateHeart();
+  }
+  setTimeout(() => animateHeart(), 500);
+</script>
+</body>
+</html>
